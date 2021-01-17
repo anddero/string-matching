@@ -4,6 +4,7 @@
 #include <random>
 #include "alg/Operation.h"
 #include "alg/WordDiffLite.h"
+#include "alg/Levenshtein.h"
 
 #define NO_DESCRIPTION "<no description>"
 
@@ -352,6 +353,13 @@ void t(Util::TestSuite& ts, const string &word1, const string &word2, const stri
     ts.check(alg(word1, word2), difference);
 }
 
+void tl(Util::TestSuite& ts, const string& w1, const string& w2, const unsigned long long expected_length) {
+    ts.check(levenshtein(w1, w2), expected_length);
+}
+
+// TODO Continue... 1. Implement simpler version of Damarau-Levenshtein with same tests and same expected counts, then see how actual results differ
+// TODO Continue... 2. Implement actual Damarau-Levenshtein with same tests and same expected counts, then see how actual results differ
+
 void test_simple_cases() {
     Util::TestSuite ts("Simple Cases");
 
@@ -368,12 +376,20 @@ void test_simple_cases() {
     t(ts, "ae", "ea", "s");
     t(ts, "ee", "ae", "r-");*/
 
-    t(ts, "", "a", "i");
+    /*t(ts, "", "a", "i");
     t(ts, "a", "a", "-");
     t(ts, "b", "a", "r");
     t(ts, "ae", "ea", "d-i");
     t(ts, "ee", "ae", "r-");
-    t(ts, "baa", "aba", "i--d");
+    t(ts, "baa", "aba", "i--d");*/
+
+    tl(ts, "", "a", 1);
+    tl(ts, "a", "a", 0);
+    tl(ts, "b", "a", 1);
+    tl(ts, "ae", "ea", 2);
+    tl(ts, "ee", "ae", 1);
+    tl(ts, "baa", "aba", 2);
+    tl(ts, "aaa", "aabbaa", 3);
 }
 
 void test_edge_cases() {
@@ -387,8 +403,11 @@ void test_edge_cases() {
     /*t(ts, "", "", "");
     t(ts, "", "google", "iiiiii");*/
 
-    t(ts, "", "", "");
-    t(ts, "", "google", "iiiiii");
+    /*t(ts, "", "", "");
+    t(ts, "", "google", "iiiiii");*/
+
+    tl(ts, "", "", 0);
+    tl(ts, "", "google", 6);
 }
 
 void test_complex_cases() {
@@ -431,7 +450,7 @@ void test_complex_cases() {
     t(ts, "01010101010010101010", "101001011010010", "d----d----dd----d---"); // d----d----r---d---dd   ss----sds---dddd
     t(ts, "what d o um ean", "wjhat do you mean jb", "-i-----d--ii-s---iii");*/
 
-    t(ts, "abc", "def", "rrr");
+    /*t(ts, "abc", "def", "rrr");
     t(ts, "abc", "bac", "d-i-");
     t(ts, "AED", "ADE", "-d-i");
     t(ts, "bcbd", "cbdb", "d---i"); // TODO Don't test this special case by exact pattern, but score and number of moves
@@ -461,9 +480,39 @@ void test_complex_cases() {
     t(ts, "010", "101010", "i---ii");
     t(ts, "010101010", "101010", "d------dd");
     t(ts, "01010101010010101010", "101001011010010", "d----d----dd----d---"); // d----d----r---d---dd   ss----sds---dddd
-    t(ts, "what d o um ean", "wjhat do you mean jb", "-i-----d--ii-d-i---iii");
+    t(ts, "what d o um ean", "wjhat do you mean jb", "-i-----d--ii-d-i---iii");*/
 
-    // TODO Continue... Write score tests, then implement sentence diff by disregarding word ordering.
+    tl(ts, "abc", "def", 3);
+    tl(ts, "abc", "bac", 2);
+    tl(ts, "AED", "ADE", 2);
+    tl(ts, "bcbd", "cbdb", 2);
+    tl(ts, "LIME", "LIEM", 2);
+    tl(ts, "Hello", "hekko", 3);
+    tl(ts, "EAED", "ADE", 3);
+    tl(ts, "AED", "EADE", 3);
+    tl(ts, "ab12", "de21", 4);
+    tl(ts, "hello", "helllo", 1);
+    tl(ts, "vihik", "wihhil", 3);
+    tl(ts, "sahtel", "saddle", 4);
+    tl(ts, "abcbdeefg", "acbdbeefg", 2);
+    tl(ts, "LO WORL", "RO WOR", 2);
+    tl(ts, "AECDAED", "ECDEADE", 4);
+    tl(ts, "AECDEAED", "ECDADE", 4);
+    tl(ts, "telefon", "tekefon", 1);
+    tl(ts, "telefon", "tellefon", 1);
+    tl(ts, "EBEHMOT", "BEGEMOTH", 4);
+    tl(ts, "AAAA BBBB", "AAA BBBB", 1);
+    tl(ts, "I WANT BEER", "DEAR", 9);
+    tl(ts, "DEAR WORLD", "HELLO WORL", 5);
+    tl(ts, "HELLO WORLD", "HELO WORLD", 1);
+    tl(ts, "HELLO WORLD", "HELRO WORD", 2);
+    tl(ts, "HELLO WORLD", "HELLO DEAR WORLD", 5);
+    tl(ts, "what d o um ean", "wjat do u mean", 4);
+    tl(ts, "010", "10", 1);
+    tl(ts, "010", "101010", 3);
+    tl(ts, "010101010", "101010", 3);
+    tl(ts, "01010101010010101010", "101001011010010", 5); // d----d----r---d---dd   ss----sds---dddd
+    tl(ts, "what d o um ean", "wjhat do you mean jb", 9);
 }
 
 /*void test_random(Util::TestSuite& ts, Util::Random& r) {
@@ -497,7 +546,7 @@ void test_complex_cases() {
     t(ts, s, s2, literal);
 }*/
 
-void test_random(Util::TestSuite& ts, Util::Random& r) {
+/*void test_random(Util::TestSuite& ts, Util::Random& r) {
     unsigned n = r.rand(1u, 100u); // TODO 10000
     std::string s = Util::repeat(" ", n);
     for (unsigned i = 0; i != n; ++i) {
@@ -514,19 +563,35 @@ void test_random(Util::TestSuite& ts, Util::Random& r) {
         prev_i += 1;
     }
     literal += Util::repeat("-", n - prev_i);
-    /*std::cout << std::endl;
+    *//*std::cout << std::endl;
     std::cout << "DEBUG: Case " << (ts.get_pass_count() + 1) << std::endl;
     std::cout << "DEBUG: " << s << std::endl;
     std::cout << "DEBUG: " << s2 << std::endl;
-    std::cout << "DEBUG: " << literal << std::endl;*/
+    std::cout << "DEBUG: " << literal << std::endl;*//*
     t(ts, s, s2, literal);
+}*/
+
+void test_random(Util::TestSuite& ts, Util::Random& r) {
+    unsigned n = r.rand(1u, 20000u);
+    std::string s = Util::repeat(" ", n);
+    for (unsigned i = 0; i != n; ++i) {
+        s[i] = (char) r.rand(32, 126);
+    }
+    std::string s2 = s;
+    unsigned long long count = 0;
+    std::string literal;
+    for (unsigned i = r.rand(0u, 10u); i < n - 1; i += r.rand(2u, 10u)) {
+        ++count;
+        s2[i] = '~';
+    }
+    tl(ts, s, s2, count);
 }
 
 void test_stress() {
     Util::TestSuite ts("Stress Test", "\tPassed all");
     Util::Random r;
 
-    unsigned test_count = 10000;
+    unsigned test_count = 1;
     cout << "Stress-testing (" << test_count << " tests)..." << endl;
 
     Util::LoadingBar bar(test_count);
