@@ -6,15 +6,25 @@
 #include "util/Random.h"
 #include "util/StringUtil.h"
 #include "util/LoadingBar.h"
+#include "alg/MinimumLinearAssignment.h"
 
 // Tests
 
-void tl(Util::TestSuite& ts, const std::string& w1, const std::string& w2, const unsigned long long expected_length) {
+void tl(Util::TestSuite& ts, const std::string& w1, const std::string& w2, const unsigned expected_length) {
     ts.check(levenshtein(w1, w2), expected_length);
 }
 
-void tdl(Util::TestSuite& ts, const std::string& w1, const std::string& w2, const unsigned long long expected_length) {
+void tdl(Util::TestSuite& ts, const std::string& w1, const std::string& w2, const unsigned expected_length) {
     ts.check(damerau_levenshtein_simplified(w1, w2), expected_length);
+}
+
+void tla(Util::TestSuite& ts, const std::vector<unsigned> matrix, const unsigned expected_score) {
+    auto dim = (unsigned) lround(sqrt(matrix.size()));
+    unsigned matrix_raw[dim * dim];
+    for (unsigned i = 0; i != dim * dim; ++i) {
+        matrix_raw[i] = matrix[i];
+    }
+    ts.check(min_assign_score(matrix_raw, dim), expected_score);
 }
 
 void test_simple_cases() {
@@ -35,6 +45,17 @@ void test_simple_cases() {
     tdl(ts, "ee", "ae", 1);
     tdl(ts, "baa", "aba", 1);
     tdl(ts, "aaa", "aabbaa", 3);
+
+    tla(ts, {0, 0, 0, 0}, 0);
+    tla(ts, {0, 1, 0, 1}, 1);
+    tla(ts, {0, 1, 1, 0}, 0);
+    tla(ts, {1, 2, 3, 4}, 5);
+    tla(ts, {1, 1, 1, 1}, 2);
+    tla(ts, {3, 3, 7, 4}, 7);
+    tla(ts, {1, 3, 2, 4}, 5);
+    tla(ts, {1, 3, 4, 2}, 3);
+    tla(ts, {4, 3, 2, 2}, 5);
+    tla(ts, {1, 2, 3, 5}, 5);
 }
 
 void test_edge_cases() {
@@ -45,6 +66,11 @@ void test_edge_cases() {
 
     tdl(ts, "", "", 0);
     tdl(ts, "", "google", 6);
+
+    tla(ts, {0}, 0);
+    tla(ts, {1}, 1);
+    tla(ts, {4}, 4);
+    tla(ts, {7}, 7);
 }
 
 void test_complex_cases() {
@@ -116,6 +142,35 @@ void test_complex_cases() {
     tdl(ts, "010101010", "101010", 3);
     tdl(ts, "01010101010010101010", "101001011010010", 5);
     tdl(ts, "what d o um ean", "wjhat do you mean jb", 8);
+
+    tla(ts, {0, 1, 2, 3, 4, 5, 6, 7, 8}, 12);
+    tla(ts, {0, 0, 1, 4, 2, 3, 0, 4, 0}, 2);
+    tla(ts, {1, 7, 8, 3, 7, 3, 5, 4, 5}, 8);
+    tla(ts, {1, 1, 3, 2, 1, 4, 1, 2, 3}, 5);
+    tla(ts, {1, 2, 1, 2, 1, 2, 3, 2, 1}, 3);
+    tla(ts, {1, 2, 4, 2, 1, 6, 3, 4, 2}, 4);
+
+    tla(ts, {
+        5, 4, 3, 3,
+        3, 2, 1, 2,
+        4, 8, 6, 7,
+        5, 5, 1, 3
+    }, 10);
+
+    tla(ts, {
+        7, 8, 9, 3, 0,
+        1, 1, 0, 4, 2,
+        0, 5, 0, 5, 0,
+        2, 2, 1, 0, 5,
+        7, 3, 0, 4, 9
+    }, 1);
+
+    tla(ts, {5, 6, 9, 8, 7, 8,
+             8, 4, 7, 3, 6, 7,
+             3, 3, 1, 8, 2, 6,
+             2, 7, 3, 4, 6, 3,
+             3, 3, 2, 5, 9, 7,
+             3, 7, 8, 9, 0, 8}, 15);
 }
 
 void test_random(Util::TestSuite& ts, Util::Random& r) {
@@ -125,7 +180,7 @@ void test_random(Util::TestSuite& ts, Util::Random& r) {
         s[i] = (char) r.rand(32, 126);
     }
     std::string s2 = s;
-    unsigned long long count = 0;
+    unsigned count = 0;
     std::string literal;
     for (unsigned i = r.rand(0u, 10u); i < n - 1; i += r.rand(2u, 10u)) {
         ++count;

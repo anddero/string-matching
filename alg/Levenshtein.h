@@ -8,7 +8,7 @@
 
 #include <string>
 
-unsigned long long levenshtein(const std::string&, const std::string&);
+unsigned levenshtein(const std::string&, const std::string&);
 
 
 #endif //FINDSONGDUPLICATES_LEVENSHTEIN_H

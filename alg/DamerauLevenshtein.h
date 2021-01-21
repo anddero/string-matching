@@ -7,7 +7,7 @@
 
 #include <string>
 
-unsigned long long damerau_levenshtein_simplified(const std::string &, const std::string &);
+unsigned damerau_levenshtein_simplified(const std::string &, const std::string &);
 
 // Damera-Levenshtein was not implemented due to significant increased memory use (n*m bytes) and asymptotic complexity
 // in case of comparing words of Unicode character set (a hash-set would need to be seeked n*m times, where the
