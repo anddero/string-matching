@@ -6,6 +6,7 @@
 #define FINDSONGDUPLICATES_STRINGUTIL_H
 
 #include <string>
+#include <vector>
 
 namespace Util {
 
@@ -13,6 +14,10 @@ namespace Util {
 
     public:
         static std::string repeat(const std::string &s, int count); // TODO Test
+        static bool contains(const std::string &s, char c); // TODO Test
+        static std::string lowercase(std::string s); // TODO Test
+        static std::vector<std::string> split(const std::string &splittable, const std::string &letters); // TODO Test
+        static std::string filter(const std::string &s, const std::string &letters); // TODO Test
     };
 
 }

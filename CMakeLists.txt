@@ -11,4 +11,5 @@ add_executable(FindSongDuplicates main.cpp
         util/TestSuite.tpp util/TestSuite.h
         util/StringUtil.cpp util/StringUtil.h
         alg/MinimumLinearAssignment.cpp alg/MinimumLinearAssignment.h
+        alg/SearchQueryDifference.cpp alg/SearchQueryDifference.h
 )
