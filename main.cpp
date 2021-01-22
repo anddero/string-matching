@@ -330,6 +330,11 @@ void test() {
 
 // Entry Point
 
+template<typename Numeric1, typename Numeric2>
+float get_perc(Numeric1 amount, Numeric2 max) {
+    return amount / (float) max * 100.f;
+}
+
 int main() {
     std::cout << "Relative path to file ('exit' to abort): ";
     std::string path; std::cin >> path;
@@ -360,10 +365,11 @@ int main() {
             diffs
     );
 
+    unsigned int source_count = duplicate_filter.get_source_count();
     std::cout << std::endl << "Duplicate filter has been initialized with "
-              << duplicate_filter.get_source_count() << " source entries." << std::endl;
+              << source_count << " source entries." << std::endl;
 
-    if (duplicate_filter.get_source_count() == 0) {
+    if (source_count == 0) {
         std::cout << "Nothing to do with 0 entries, type anything and hit enter to exit." << std::endl;
         std::string exit_command; std::cin >> exit_command;
         return 0;
@@ -373,7 +379,7 @@ int main() {
     while (play) {
         std::cout << std::endl << "Insert the number of entries to scan next ('0' = finish): ";
         unsigned scan_count; std::cin >> scan_count;
-        scan_count = std::min(scan_count, duplicate_filter.get_source_count() - duplicate_filter.get_next_index() + 1);
+        scan_count = std::min(scan_count, source_count - duplicate_filter.get_next_index() + 1);
         if (scan_count == 0) break;
 
         Util::LoadingBar loading_bar(scan_count);
@@ -385,32 +391,22 @@ int main() {
         loading_bar.conditional_display(scan_count);
 
         std::cout.precision(2);
-        std::cout << std::endl << "Progress (out of " << duplicate_filter.get_source_count() << " total):" << std::endl
-                  << "\tScanned: " << duplicate_filter.get_next_index()
-                  << " // " << std::fixed << (duplicate_filter.get_next_index()
-                                                / (float) duplicate_filter.get_source_count()
-                                                * 100.f
-                                             ) << "% of total" << std::endl
-                  << "\tDeleted: " << duplicate_filter.get_deleted_count()
-                  << " // " << std::fixed << (duplicate_filter.get_deleted_count()
-                                                / (float) duplicate_filter.get_source_count()
-                                                * 100.f
-                                             ) << "% of total" << std::endl
-                  << "\tDuplicates found: " << duplicate_filter.get_dup_count()
-                  << " // " << std::fixed << (duplicate_filter.get_dup_count()
-                                                / (float) duplicate_filter.get_source_count()
-                                                * 100.f
-                                             ) << "% of total" << std::endl
-                  << "\tUnique elements recorded: " << duplicate_filter.get_unique_count()
-                  << " // " << std::fixed << (duplicate_filter.get_unique_count()
-                                                / (float) duplicate_filter.get_next_index()
-                                                * 100.f
-                                           ) << "% of scanned" << std::endl
-                  << "\tNon-ASCII elements skipped: " << duplicate_filter.get_skipped_count()
-                  << " // " << std::fixed << (duplicate_filter.get_skipped_count()
-                                                / (float) duplicate_filter.get_source_count()
-                                                * 100.f
-                                             ) << "% of total" << std::endl;
+        const unsigned int scanned_count = duplicate_filter.get_next_index();
+        const unsigned int deleted_count = duplicate_filter.get_deleted_count();
+        const unsigned int duplicate_count = duplicate_filter.get_dup_count();
+        const unsigned int unique_count = duplicate_filter.get_unique_count();
+        const unsigned int skipped_count = duplicate_filter.get_skipped_count();
+        std::cout << std::endl << "Progress (out of " << source_count << " total):" << std::endl
+                  << "\tScanned: " << scanned_count
+                        << " // " << std::fixed << get_perc(scanned_count, source_count) << "% of total" << std::endl
+                  << "\tDeleted: " << deleted_count
+                        << " // " << std::fixed << get_perc(deleted_count, source_count) << "% of total" << std::endl
+                  << "\tDuplicates found: " << duplicate_count
+                        << " // " << std::fixed << get_perc(duplicate_count, source_count) << "% of total" << std::endl
+                  << "\tUnique elements recorded: " << unique_count
+                        << " // " << std::fixed << get_perc(unique_count, scanned_count) << "% of scanned" << std::endl
+                  << "\tNon-ASCII elements skipped: " << skipped_count
+                        << " // " << std::fixed << get_perc(skipped_count, source_count) << "% of total" << std::endl;
     }
 
     duplicate_filter.finalize(prefix);

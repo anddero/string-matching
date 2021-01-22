@@ -114,7 +114,7 @@ void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index
         const String& ref_word = source_lines[key].first;
         const List<Duplicate>& dups = index_dup_map.at(key);
         if (dups.size() == 1) {
-            out_file << dup_no << "." << std::endl;
+            out_file << (dup_no++) << "." << std::endl;
         } else {
             out_file << dup_no << ". - " << (dup_no += dups.size()) - 1 << "." << std::endl;
         }
