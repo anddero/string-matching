@@ -51,3 +51,10 @@ std::string Util::StringUtil::filter(const std::string &s, const std::string &le
     }
     return sn;
 }
+
+bool Util::StringUtil::is_ascii(const std::string &s) {
+    for (const auto& c : s) {
+        if (static_cast<unsigned char>(c) > 127) return false;
+    }
+    return true;
+}

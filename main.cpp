@@ -1,5 +1,6 @@
 #include <string>
 #include <iostream>
+#include <algorithm>
 #include "util/TestSuite.h"
 #include "alg/Levenshtein.h"
 #include "alg/DamerauLevenshtein.h"
@@ -8,6 +9,7 @@
 #include "util/LoadingBar.h"
 #include "alg/MinimumLinearAssignment.h"
 #include "alg/SearchQueryDifference.h"
+#include "alg/DuplicateFilter.h"
 
 // Tests
 
@@ -329,5 +331,89 @@ void test() {
 // Entry Point
 
 int main() {
-    test();
+    std::cout << "Relative path to file ('exit' to abort): ";
+    std::string path; std::cin >> path;
+    if (path == "exit") return 0;
+
+    std::cout << "Prefix for newly created files ('exit' to abort): ";
+    std::string prefix; std::cin >> prefix;
+    if (prefix == "exit") return 0;
+
+    std::cout << "Comma-separated difference integers to consider ('exit' to abort): ";
+    std::string diff_list; std::cin >> diff_list;
+    if (diff_list == "exit") return 0;
+
+    std::vector<std::string> diffs_s = Util::StringUtil::split(diff_list, ",");
+    std::vector<float> diffs(diffs_s.size());
+
+    std::transform(
+            diffs_s.begin(),
+            diffs_s.end(),
+            diffs.begin(),
+            [](const std::string& diff_percentage) {
+                return std::stoi(diff_percentage) / 100.f;
+            }
+    );
+
+    DuplicateFilter duplicate_filter(
+            path,
+            diffs
+    );
+
+    std::cout << std::endl << "Duplicate filter has been initialized with "
+              << duplicate_filter.get_source_count() << " source entries." << std::endl;
+
+    if (duplicate_filter.get_source_count() == 0) {
+        std::cout << "Nothing to do with 0 entries, type anything and hit enter to exit." << std::endl;
+        std::string exit_command; std::cin >> exit_command;
+        return 0;
+    }
+
+    bool play = true;
+    while (play) {
+        std::cout << std::endl << "Insert the number of entries to scan next ('0' = finish): ";
+        unsigned scan_count; std::cin >> scan_count;
+        scan_count = std::min(scan_count, duplicate_filter.get_source_count() - duplicate_filter.get_next_index() + 1);
+        if (scan_count == 0) break;
+
+        Util::LoadingBar loading_bar(scan_count);
+        for (unsigned i = 0; i != scan_count; ++i) {
+            play = duplicate_filter.scan(1);
+            loading_bar.conditional_display(i);
+            if (!play) break;
+        }
+        loading_bar.conditional_display(scan_count);
+
+        std::cout.precision(2);
+        std::cout << std::endl << "Progress (out of " << duplicate_filter.get_source_count() << " total):" << std::endl
+                  << "\tScanned: " << duplicate_filter.get_next_index()
+                  << " // " << std::fixed << (duplicate_filter.get_next_index()
+                                                / (float) duplicate_filter.get_source_count()
+                                                * 100.f
+                                             ) << "% of total" << std::endl
+                  << "\tDeleted: " << duplicate_filter.get_deleted_count()
+                  << " // " << std::fixed << (duplicate_filter.get_deleted_count()
+                                                / (float) duplicate_filter.get_source_count()
+                                                * 100.f
+                                             ) << "% of total" << std::endl
+                  << "\tDuplicates found: " << duplicate_filter.get_dup_count()
+                  << " // " << std::fixed << (duplicate_filter.get_dup_count()
+                                                / (float) duplicate_filter.get_source_count()
+                                                * 100.f
+                                             ) << "% of total" << std::endl
+                  << "\tUnique elements recorded: " << duplicate_filter.get_unique_count()
+                  << " // " << std::fixed << (duplicate_filter.get_unique_count()
+                                                / (float) duplicate_filter.get_next_index()
+                                                * 100.f
+                                           ) << "% of scanned" << std::endl
+                  << "\tNon-ASCII elements skipped: " << duplicate_filter.get_skipped_count()
+                  << " // " << std::fixed << (duplicate_filter.get_skipped_count()
+                                                / (float) duplicate_filter.get_source_count()
+                                                * 100.f
+                                             ) << "% of total" << std::endl;
+    }
+
+    duplicate_filter.finalize(prefix);
+    std::cout << std::endl << "Files have been written to disk. Type anything and hit enter to close." << std::endl;
+    std::string exit_command; std::cin >> exit_command;
 }

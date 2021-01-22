@@ -18,6 +18,7 @@ namespace Util {
         static std::string lowercase(std::string s); // TODO Test
         static std::vector<std::string> split(const std::string &splittable, const std::string &letters); // TODO Test
         static std::string filter(const std::string &s, const std::string &letters); // TODO Test
+        static bool is_ascii(const std::string &s); // TODO Test
     };
 
 }
