@@ -25,19 +25,15 @@ inline unsigned el(const unsigned matrix[], const unsigned dim, const unsigned r
     return matrix[row * dim + col];
 }
 
-inline unsigned calc_max_next(const unsigned col_mins[],
-                              const unsigned dim, 
-                              const unsigned next_col_index,
-                              const unsigned min_score,
-                              const unsigned cur_score
-) {
-    const unsigned col_min_index = next_col_index + 1;
-    const unsigned subt_term = cur_score + (col_min_index < dim ? col_mins[col_min_index] : 0);
-    return subt_term > min_score ? 0 : min_score - subt_term;
+inline unsigned& el(unsigned *matrix, const unsigned dim, const unsigned row, const unsigned col) {
+    return matrix[row * dim + col];
+}
+
+inline unsigned calc_max_next(const unsigned min_score, const unsigned cur_score) {
+    return cur_score >= min_score ? 0 : min_score - cur_score;
 }
 
 void min_assign_score(const unsigned matrix[], // TODO Presort all columns before calling
-                      const unsigned col_mins[],
                       unsigned &min_score,
                       const unsigned dim,
                       const std::set<unsigned> &used_row_indices,
@@ -72,49 +68,77 @@ void min_assign_score(const unsigned matrix[], // TODO Presort all columns befor
         used_row_indices_new.insert(value.row);
         min_assign_score(
                 matrix,
-                col_mins,
                 min_score,
                 dim,
                 used_row_indices_new,
-                calc_max_next(col_mins, dim, col + 1, min_score, score + value.value),
+                calc_max_next(min_score, score + value.value),
                 score + value.value
         );
     }
 }
 
-unsigned min_assign_score(const unsigned matrix[], const unsigned dim) { // TODO Test
+unsigned min_assign_score(const unsigned matrix_const[], const unsigned dim) { // TODO Test
     if (dim == 0) {
         throw std::runtime_error("Expected at least one element in matrix");
     }
     if (dim == 1) {
-        return matrix[0];
+        return matrix_const[0];
     }
     if (dim > 100) {
         throw std::runtime_error("This linear assignment algorithm is intended for use with small task sizes");
     }
-    
-    unsigned min_score = 0;
-    unsigned col_mins[dim];
-    for (unsigned i = 0; i != dim; ++i) {
-        unsigned col = dim - i - 1;
-        unsigned cur_col_min = el(matrix, dim, 0, col);
-        for (unsigned row = 1; row != dim; ++row) {
-            cur_col_min = std::min(cur_col_min, el(matrix, dim, row, col));
-        }
-        col_mins[col] = cur_col_min + (col + 1 < dim ? col_mins[col + 1] : 0);
-        min_score += el(matrix, dim, col, col);
+
+    // copy matrix
+    unsigned matrix[dim * dim];
+    for (unsigned i = 0; i != dim * dim; ++i) {
+        matrix[i] = matrix_const[i];
     }
-    if (min_score == col_mins[0]) return min_score;
+
+    unsigned normalization_term = 0;
+
+    // normalize rows
+    for (unsigned row = 0; row != dim; ++row) {
+        unsigned row_min = el(matrix, dim, row, 0);
+        for (unsigned col = 1; col != dim; ++col) {
+            if (row_min == 0) break;
+            row_min = std::min(row_min, el(matrix, dim, row, col));
+        }
+        if (row_min == 0) continue;
+        for (unsigned col = 0; col != dim; ++col) {
+            el(matrix, dim, row, col) -= row_min;
+        }
+        normalization_term += row_min;
+    }
+
+    // normalize columns
+    for (unsigned col = 0; col != dim; ++col) {
+        unsigned col_min = el(matrix, dim, 0, col);
+        for (unsigned row = 1; row != dim; ++row) {
+            if (col_min == 0) break;
+            col_min = std::min(col_min, el(matrix, dim, row, col));
+        }
+        if (col_min == 0) continue;
+        for (unsigned row = 0; row != dim; ++row) {
+            el(matrix, dim, row, col) -= col_min;
+        }
+        normalization_term += col_min;
+    }
+
+    // find current minimum score by main diagonal
+    unsigned min_score = 0;
+    for (unsigned i = 0; i != dim; ++i) {
+        unsigned main_diag_cell = dim - i - 1;
+        min_score += el(matrix, dim, main_diag_cell, main_diag_cell);
+    }
+    if (min_score == 0) return normalization_term;
     
     min_assign_score(
             matrix,
-            col_mins, 
             min_score, 
             dim, 
             {}, 
-            calc_max_next(col_mins, dim, 0, min_score, 0),
+            min_score,
             0
     );
-    
-    return min_score;
+    return min_score + normalization_term;
 }

@@ -6,7 +6,7 @@
 #include "SearchQueryDifference.h"
 #include "../util/StringUtil.h"
 #include "DamerauLevenshtein.h"
-#include "MinimumLinearAssignment.h"
+#include "HungarianMatching.h"
 
 const std::string WHITESPACE = " \t\r\n";
 const std::string IGNORED_SYMBOLS = "\"#&'()*+,-./:;<=>?^_`~";
@@ -44,7 +44,7 @@ unsigned search_query_difference(const std::string &query1, const std::string &q
         }
     }
 
-    return min_assign_score(matrix, (unsigned) largest.size());
+    return HungarianMatching(matrix, (unsigned) largest.size()).calculate();
 }
 
 float search_query_similarity(const std::string &query1, const std::string &query2) {
