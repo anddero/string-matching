@@ -5,7 +5,10 @@
 #ifndef FINDSONGDUPLICATES_HUNGARIANMATCHING_H
 #define FINDSONGDUPLICATES_HUNGARIANMATCHING_H
 
-
+/**
+ * Implementation of the Munkres' Assignment Algorithm based on the article
+ * from https://brc2.com/the-algorithm-workshop/
+ */
 class HungarianMatching {
     // Source
     unsigned const * const src_matrix;
