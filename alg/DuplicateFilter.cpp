@@ -10,6 +10,7 @@
 
 DuplicateFilter::DuplicateFilter(const String &file_location, Vector<float> diff_upper_bounds) {
     std::ifstream input(file_location);
+    if (!input.is_open()) throw std::runtime_error("File '" + file_location + "' could not be opened");
     for (String line; std::getline(input, line); ) {
         if (!line.empty()) source_lines.push_back(SourceLine(line, false));
     }
