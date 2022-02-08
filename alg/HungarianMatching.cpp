@@ -3,6 +3,7 @@
 //
 
 #include <stdexcept>
+#include <limits>
 #include "HungarianMatching.h"
 
 HungarianMatching::HungarianMatching(unsigned const * const src_matrix, const unsigned dim)

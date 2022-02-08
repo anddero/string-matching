@@ -3,6 +3,7 @@
 //
 
 #include <stdexcept>
+#include <limits>
 #include "DamerauLevenshtein.h"
 
 const auto MAX_UNSIGNED = std::numeric_limits<unsigned>::max();

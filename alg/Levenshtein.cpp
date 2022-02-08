@@ -3,6 +3,7 @@
 //
 
 #include <stdexcept>
+#include <limits>
 #include "Levenshtein.h"
 
 unsigned levenshtein(const std::string& word1, const std::string& word2) {
