@@ -10,6 +10,7 @@
 #include "alg/SearchQueryDifference.h"
 #include "alg/DuplicateFilter.h"
 #include "alg/HungarianMatching.h"
+#include "util/FileUtil.h"
 
 // Tests
 
@@ -432,7 +433,7 @@ int program() {
     );
 
     DuplicateFilter duplicate_filter(
-            path,
+            Util::FileUtil::readSourceFile(path),
             diffs
     );
 

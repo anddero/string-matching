@@ -52,7 +52,7 @@ class DuplicateFilter {
     unsigned move_remaining_sources();
 
 public:
-    DuplicateFilter(const String& file_location, Vector<float> diff_upper_bounds);
+    DuplicateFilter(const std::vector<String> &source, const Vector<float>& diff_upper_bounds);
     unsigned get_source_count() const;
     unsigned get_skipped_count() const;
     unsigned get_unique_count() const;

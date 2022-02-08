@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(FindSongDuplicates main.cpp
         alg/Levenshtein.cpp alg/Levenshtein.h
         alg/DamerauLevenshtein.cpp alg/DamerauLevenshtein.h
+        util/FileUtil.cpp util/FileUtil.h
         util/LoadingBar.cpp util/LoadingBar.h
         util/Random.tpp util/Random.h
         util/TestSuite.tpp util/TestSuite.h

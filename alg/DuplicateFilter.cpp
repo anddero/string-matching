@@ -8,13 +8,10 @@
 #include "../util/StringUtil.h"
 #include "SearchQueryDifference.h"
 
-DuplicateFilter::DuplicateFilter(const String &file_location, Vector<float> diff_upper_bounds) {
-    std::ifstream input(file_location);
-    if (!input.is_open()) throw std::runtime_error("File '" + file_location + "' could not be opened");
-    for (String line; std::getline(input, line); ) {
-        if (!line.empty()) source_lines.push_back(SourceLine(line, false));
+DuplicateFilter::DuplicateFilter(const std::vector<String> &source, const Vector<float>& diff_upper_bounds) {
+    for (const String& line : source) {
+        source_lines.push_back(SourceLine(line, false));
     }
-    input.close();
 
     for (float bound : diff_upper_bounds) {
         ascii_duplicates.insert(DiffDupMapEl(bound, {}));
