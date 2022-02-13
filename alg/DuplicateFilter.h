@@ -67,7 +67,7 @@ class DuplicateFilter {
     void write_unique_file(const String& file_name) const;
     unsigned move_remaining_sources();
 
-    static bool difference_in_number(const SearchQuerySimilarityResult &similarity_result, const std::string &line, const std::string &ref_line);
+    static bool has_obvious_number_difference(const SearchQuerySimilarityResult &similarity_result, const std::string &line, const std::string &ref_line);
 
 public:
     /**
