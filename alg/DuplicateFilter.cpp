@@ -10,7 +10,7 @@
 
 DuplicateFilter::DuplicateFilter(const std::vector<String> &source, const Vector<float>& diff_upper_bounds) {
     for (const String& line : source) {
-        source_lines.push_back(SourceLine(line, false));
+        source_lines.push_back(SourceLine(line, false, false));
     }
 
     for (float bound : diff_upper_bounds) {
@@ -25,14 +25,14 @@ bool DuplicateFilter::scan_next() {
 
     SourceLine& ref_line = source_lines[ref_line_index];
 
-    if (ref_line.second) {
+    if (ref_line.deleted || ref_line.from_unique_source) {
         ++ref_line_index;
         return true;
     }
 
-    if (!Util::StringUtil::is_ascii(ref_line.first)) {
+    if (!Util::StringUtil::is_ascii(ref_line.line)) {
         skipped_unicode_lines.push_back(ref_line_index);
-        ref_line.second = true;
+        ref_line.deleted = true;
         ++ref_line_index;
         return true;
     }
@@ -40,17 +40,17 @@ bool DuplicateFilter::scan_next() {
     for (unsigned line_index = ref_line_index + 1; line_index != source_lines.size(); ++line_index) {
         SourceLine& line = source_lines[line_index];
 
-        if (line.second) {
+        if (line.deleted) {
             continue;
         }
 
-        if (!Util::StringUtil::is_ascii(line.first)) {
+        if (!Util::StringUtil::is_ascii(line.line)) {
             skipped_unicode_lines.push_back(line_index);
-            line.second = true;
+            line.deleted = true;
             continue;
         }
 
-        const SearchQuerySimilarityResult similarity_result = search_query_similarity(line.first, ref_line.first);
+        const SearchQuerySimilarityResult similarity_result = search_query_similarity(line.line, ref_line.line);
         const auto& matching_ref_word_index_by_word_index = similarity_result.matching_query2_word_index_by_query1_word_index;
         float similarity = similarity_result.similarity;
         for (auto& diff_dup_pair : ascii_duplicates) {
@@ -60,14 +60,14 @@ bool DuplicateFilter::scan_next() {
                         .first // either new inserted pair or existing if already existed
                         ->second // the list
                         .emplace_back(line_index, similarity, matching_ref_word_index_by_word_index);
-                line.second = true;
+                line.deleted = true;
                 break;
             }
         }
     }
 
     unique_ascii_lines.push_back(ref_line_index);
-    ref_line.second = true;
+    ref_line.deleted = true;
     ++ref_line_index;
     return true;
 }
@@ -158,12 +158,12 @@ void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index
     out_file.precision(2);
     unsigned dup_no = 1;
     for (const unsigned key : index_dup_map_keys) {
-        const String& ref_line = source_lines[key].first;
+        const String& ref_line = source_lines[key].line;
         const auto ref_line_normalized = Util::StringUtil::join(get_words(ref_line), " ");
         const List<DuplicateDetails>& duplicates = index_dup_map.at(key);
         std::vector<std::string> dup_lines_normalized;
         for (const auto &dup : duplicates) {
-            dup_lines_normalized.push_back(reorder_words(source_lines[dup.source_index].first, dup.matching_original_line_word_indices));
+            dup_lines_normalized.push_back(reorder_words(source_lines[dup.source_index].line, dup.matching_original_line_word_indices));
         }
         if (duplicates.size() == 1) {
             out_file << (dup_no++) << "." << std::endl;
@@ -179,7 +179,7 @@ void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index
         for (const DuplicateDetails& dup : duplicates) {
             out_file << "[" << std::fixed << (dup.similarity * 100.f) << "%] "
                      << Util::StringUtil::pad_right(dup_lines_normalized[ii], ' ', max_normalized_phrase_len) << " ---|||--- "
-                     << source_lines[dup.source_index].first << std::endl;
+                     << source_lines[dup.source_index].line << std::endl;
             ++ii;
         }
         out_file << std::endl;
@@ -190,7 +190,7 @@ void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index
 void DuplicateFilter::write_unicode_file(const String &file_name) const {
     std::ofstream out_file(file_name);
     for (const unsigned key : skipped_unicode_lines) {
-        out_file << source_lines[key].first << std::endl;
+        out_file << source_lines[key].line << std::endl;
     }
     out_file.close();
 }
@@ -198,7 +198,7 @@ void DuplicateFilter::write_unicode_file(const String &file_name) const {
 void DuplicateFilter::write_unique_file(const String &file_name) const {
     std::ofstream out_file(file_name);
     for (const unsigned key : unique_ascii_lines) {
-        out_file << source_lines[key].first << std::endl;
+        out_file << source_lines[key].line << std::endl;
     }
     out_file.close();
 }
@@ -250,7 +250,7 @@ unsigned DuplicateFilter::get_next_index() const {
 unsigned DuplicateFilter::get_deleted_count() const {
     unsigned count = 0;
     for (const auto& el : source_lines) {
-        count += el.second;
+        count += el.deleted;
     }
     return count;
 }
@@ -259,10 +259,10 @@ unsigned DuplicateFilter::move_remaining_sources() {
     unsigned count = 0;
     for (unsigned i = 0; i != source_lines.size(); ++i) {
         auto& el = source_lines[i];
-        if (!el.second) {
+        if (!el.deleted) {
             ++count;
-            el.second = true;
-            if (Util::StringUtil::is_ascii(el.first)) {
+            el.deleted = true;
+            if (Util::StringUtil::is_ascii(el.line)) {
                 unique_ascii_lines.push_back(i);
             } else {
                 skipped_unicode_lines.push_back(i);
