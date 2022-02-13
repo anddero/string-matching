@@ -484,6 +484,7 @@ int program() {
     duplicate_filter.finalize(prefix);
     std::cout << std::endl << "Files have been written to disk. Type anything and hit enter to close." << std::endl;
     std::string exit_command; std::cin >> exit_command;
+    return 0;
 }
 
 int main() {

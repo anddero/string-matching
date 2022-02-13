@@ -3,6 +3,7 @@
 //
 
 #include <vector>
+#include <algorithm>
 #include "SearchQueryDifference.h"
 #include "../util/StringUtil.h"
 #include "DamerauLevenshtein.h"
@@ -24,6 +25,12 @@ std::vector<std::string> get_words(const std::string &phrase) {
     return words;
 }
 
+std::string normalize_phrase(const std::string &phrase) {
+    auto words = get_words(phrase);
+    std::sort(words.begin(), words.end());
+    return Util::StringUtil::join(words, " ");
+}
+
 unsigned search_query_difference(const std::string &query1, const std::string &query2) {
     auto words1 = get_words(query1);
     auto words2 = get_words(query2);
@@ -31,7 +38,7 @@ unsigned search_query_difference(const std::string &query1, const std::string &q
     auto& largest = words1.size() > words2.size() ? words1 : words2;
     auto& smallest = words1.size() > words2.size() ? words2 : words1;
 
-    if (largest.size() == 0) return 0;
+    if (largest.empty()) return 0;
 
     if (largest.size() > smallest.size()) {
         smallest.insert(smallest.begin(), largest.size() - smallest.size(), "");

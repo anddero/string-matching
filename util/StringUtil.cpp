@@ -58,3 +58,18 @@ bool Util::StringUtil::is_ascii(const std::string &s) {
     }
     return true;
 }
+
+std::string Util::StringUtil::join(const std::vector<std::string> &v, const std::string &s) {
+    if (v.empty()) return "";
+    std::string result = v[0];
+    for (unsigned i = 1; i != v.size(); ++i) {
+        result += s + v[i];
+    }
+    return result;
+}
+
+std::string Util::StringUtil::pad_right(const std::string &phrase_to_pad, const char pad_char, const unsigned int result_min_len) {
+    unsigned phrase_len = phrase_to_pad.length();
+    if (phrase_len >= result_min_len) return phrase_to_pad;
+    return phrase_to_pad + repeat(std::string(1, pad_char), result_min_len - phrase_len);
+}

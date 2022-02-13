@@ -8,6 +8,8 @@
 
 #include <string>
 
+std::string normalize_phrase(const std::string &phrase);
+
 unsigned search_query_difference(const std::string &, const std::string &);
 
 float search_query_similarity(const std::string &, const std::string &);

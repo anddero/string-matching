@@ -111,15 +111,31 @@ void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index
     for (const unsigned key : index_dup_map_keys) {
         const String& ref_word = source_lines[key].first;
         const List<Duplicate>& dups = index_dup_map.at(key);
+        std::vector<std::string> dups_normalized;
+        for (const auto &dup : dups) {
+            dups_normalized.push_back(normalize_phrase(source_lines[dup.first].first));
+        }
         if (dups.size() == 1) {
             out_file << (dup_no++) << "." << std::endl;
         } else {
             out_file << dup_no << ". - " << (dup_no += dups.size()) - 1 << "." << std::endl;
         }
-        out_file << "[unique] " << ref_word << std::endl;
+        const auto ref_word_normalized = normalize_phrase(ref_word);
+        unsigned max_normalized_phrase_len = ref_word_normalized.length();
+        for (const auto &item : dups_normalized) {
+            max_normalized_phrase_len = std::max<unsigned>(max_normalized_phrase_len, item.length());
+        }
+        out_file << "[unique] " << Util::StringUtil::pad_right(ref_word, ' ', max_normalized_phrase_len) << " ---|||--- " << ref_word << std::endl;
+        // TODO Instead of outputting alphabetically sorted "normalized" phrases,
+        //  output the original phrase preserving word ordering with special symbols filtered out,
+        //  and output all the duplicate phrases by reordering their words according to the matching map with the original phrase.
+        //  Basically make Hungarian matching return some metadata about the result and use that to derive the "normalized" phrases.
+        unsigned ii = 0;
         for (const Duplicate& dup : dups) {
             out_file << "[" << std::fixed << (dup.second * 100.f) << "%] "
+                     << Util::StringUtil::pad_right(dups_normalized[ii], ' ', max_normalized_phrase_len) << " ---|||--- "
                      << source_lines[dup.first].first << std::endl;
+            ++ii;
         }
         out_file << std::endl;
     }
