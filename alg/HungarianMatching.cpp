@@ -4,6 +4,8 @@
 
 #include <stdexcept>
 #include <limits>
+#include <iostream>
+#include <vector>
 #include "HungarianMatching.h"
 
 HungarianMatching::HungarianMatching(unsigned const * const src_matrix, const unsigned dim)
@@ -237,11 +239,9 @@ bool HungarianMatching::backtrack_loop_iteration() {
     return true;
 }
 
-unsigned HungarianMatching::calculate() {
+HungarianMatching::Result HungarianMatching::calculate() {
     // 1x1 matrix
-    if (dim == 1) {
-        return src_matrix[0];
-    }
+    if (dim == 1) return Result(src_matrix[0], std::vector<unsigned>(0));
 
     // Copy matrix
     for (unsigned i = 0; i != dim * dim; ++i) {
@@ -290,17 +290,37 @@ unsigned HungarianMatching::calculate() {
     while (outer_loop_iteration());
 
     // Calculate sum of starred cells from original matrix
+    std::vector<unsigned> resulting_matches(dim);
     unsigned sum = 0;
     for (unsigned row = 0; row != dim; ++row) {
         // Find one star per row, then continue to next row
         for (unsigned col = 0; col != dim; ++col) {
             if (star(row, col)) { // Star present
                 sum += el_src(row, col); // Add same cell from source
+                resulting_matches[row] = col;
                 break; // Continue to next row
             }
         }
     }
 
     // Return result
-    return sum;
+    return Result(sum, resulting_matches);
+}
+
+void HungarianMatching::output_src_matrix() {
+    for (unsigned y = 0; y != dim; ++y) {
+        for (unsigned x = 0; x != dim; ++x) {
+            std::cout << el_src(y, x) << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+void HungarianMatching::output_stars_matrix() {
+    for (unsigned y = 0; y != dim; ++y) {
+        for (unsigned x = 0; x != dim; ++x) {
+            std::cout << (star(y, x) ? "*" : " ");
+        }
+        std::cout << std::endl;
+    }
 }

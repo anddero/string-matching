@@ -31,14 +31,14 @@ std::string normalize_phrase(const std::string &phrase) {
     return Util::StringUtil::join(words, " ");
 }
 
-unsigned search_query_difference(const std::string &query1, const std::string &query2) {
+HungarianMatching::Result search_query_difference(const std::string &query1, const std::string &query2) {
     auto words1 = get_words(query1);
     auto words2 = get_words(query2);
 
     auto& largest = words1.size() > words2.size() ? words1 : words2;
     auto& smallest = words1.size() > words2.size() ? words2 : words1;
 
-    if (largest.empty()) return 0;
+    if (largest.empty()) return HungarianMatching::Result(0, std::vector<unsigned>());
 
     if (largest.size() > smallest.size()) {
         smallest.insert(smallest.begin(), largest.size() - smallest.size(), "");
@@ -54,13 +54,14 @@ unsigned search_query_difference(const std::string &query1, const std::string &q
     return HungarianMatching(matrix, (unsigned) largest.size()).calculate();
 }
 
-float search_query_similarity(const std::string &query1, const std::string &query2) {
+SearchQuerySimilarityResult search_query_similarity(const std::string &query1, const std::string &query2) {
     std::string filtered1 = Util::StringUtil::filter(query1, SPLIT_SYMBOLS);
     std::string filtered2 = Util::StringUtil::filter(query2, SPLIT_SYMBOLS);
     unsigned max_diff = (unsigned) std::max(filtered1.size(), filtered2.size());
-    if (max_diff == 0) return 1.0;
-    unsigned diff = search_query_difference(query1, query2);
-    if (diff == 0) return 1.0;
-    if (diff > max_diff) return 0.0;
-    return 1.f - (diff / (float) max_diff);
+    if (max_diff == 0) return SearchQuerySimilarityResult(1.0, std::vector<unsigned>());
+    const HungarianMatching::Result diff_result = search_query_difference(query1, query2);
+    unsigned diff_score = diff_result.difference;
+    if (diff_score == 0) return SearchQuerySimilarityResult(1.0, diff_result.matching_cols_by_row);
+    if (diff_score > max_diff) return SearchQuerySimilarityResult(0.0, diff_result.matching_cols_by_row);
+    return SearchQuerySimilarityResult(1.f - (diff_score / (float) max_diff), diff_result.matching_cols_by_row);
 }

@@ -10,6 +10,11 @@
  * from https://brc2.com/the-algorithm-workshop/
  */
 class HungarianMatching {
+
+    // Output utils
+    void output_src_matrix();
+    void output_stars_matrix();
+
     // Source
     unsigned const * const src_matrix;
     unsigned const dim;
@@ -35,11 +40,20 @@ class HungarianMatching {
     bool backtrack_loop_iteration(); // Return true if the backtrack loop iteration should be called again, false to finish
 public:
 
+    struct Result {
+        unsigned difference;
+        std::vector<unsigned> matching_cols_by_row;
+
+        Result(unsigned int score, const std::vector<unsigned int> &matchingColsByRow)
+                : difference(score)
+                , matching_cols_by_row(matchingColsByRow) {}
+    };
+
     HungarianMatching(unsigned const * src_matrix, unsigned dim);
 
     virtual ~HungarianMatching();
 
-    unsigned calculate();
+    Result calculate();
 };
 
 

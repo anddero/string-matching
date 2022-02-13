@@ -28,15 +28,15 @@ void tla(Util::TestSuite& ts, const std::vector<unsigned> matrix, const unsigned
     for (unsigned i = 0; i != dim * dim; ++i) {
         matrix_raw[i] = matrix[i];
     }
-    ts.check(HungarianMatching(matrix_raw, dim).calculate(), expected_score);
+    ts.check(HungarianMatching(matrix_raw, dim).calculate().difference, expected_score);
 }
 
 void tsq(Util::TestSuite& ts, const std::string &query1, const std::string &query2, const unsigned expected_score) {
-    ts.check(search_query_difference(query1, query2), expected_score);
+    ts.check(search_query_difference(query1, query2).difference, expected_score);
 }
 
 void tsim(Util::TestSuite& ts, const std::string &query1, const std::string &query2, const unsigned expected_percentage) {
-    ts.check(search_query_similarity(query1, query2), expected_percentage / 100.f, 0.01f);
+    ts.check(search_query_similarity(query1, query2).similarity, expected_percentage / 100.f, 0.01f);
 }
 
 void test_simple_cases() {

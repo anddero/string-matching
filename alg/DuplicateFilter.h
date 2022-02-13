@@ -26,11 +26,20 @@ using Map = std::map<T, U>;
 
 using SourceLine = Pair<String, bool>;
 
-using Duplicate = Pair<unsigned, float>;
+struct DuplicateDetails {
+    unsigned source_index;
+    float similarity;
+    std::vector<unsigned> matching_original_word_indices;
+    DuplicateDetails(unsigned int index, float similarity,
+                     const std::vector<unsigned int> &matchingOriginalWordIndices)
+            : source_index(index)
+            , similarity(similarity)
+            , matching_original_word_indices(matchingOriginalWordIndices) {}
+};
 
-using IndexDupMap = Map<unsigned, List<Duplicate> >;
+using IndexDupMap = Map<unsigned, List<DuplicateDetails> >;
 
-using IndexDupMapEl = Pair<unsigned, List<Duplicate> >;
+using IndexDupMapEl = Pair<unsigned, List<DuplicateDetails> >;
 
 using DiffDupMap = Map<float, IndexDupMap>;
 

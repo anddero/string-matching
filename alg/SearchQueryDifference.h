@@ -7,12 +7,22 @@
 
 
 #include <string>
+#include "HungarianMatching.h"
+
+struct SearchQuerySimilarityResult {
+    float similarity;
+    std::vector<unsigned> matching_source_word_indices;
+
+    SearchQuerySimilarityResult(float similarity, const std::vector<unsigned int> &matchingSourceWordIndices)
+            : similarity(similarity)
+            , matching_source_word_indices(matchingSourceWordIndices) {}
+};
 
 std::string normalize_phrase(const std::string &phrase);
 
-unsigned search_query_difference(const std::string &, const std::string &);
+HungarianMatching::Result search_query_difference(const std::string &, const std::string &);
 
-float search_query_similarity(const std::string &, const std::string &);
+SearchQuerySimilarityResult search_query_similarity(const std::string &, const std::string &);
 
 
 #endif //FINDSONGDUPLICATES_SEARCHQUERYDIFFERENCE_H
