@@ -28,7 +28,13 @@ struct SearchQueryDifferenceResult {
         , matching_query2_word_index_by_query1_word_index(matchingQuery2WordIndexByQuery1WordIndex) {}
 };
 
-std::string normalize_phrase(const std::string &phrase, const std::string &source_phrase_normalized = "");
+std::vector<std::string> get_words(const std::string &phrase);
+
+std::vector<int> flip_matching_indices_shrinking(const std::vector<int> &matching_indices, unsigned int new_size);
+
+std::vector<int> flip_matching_indices_expanding(const std::vector<int> &matching_indices, unsigned int new_size);
+
+std::vector<int> flip_matching_indices(const std::vector<int> &matching_indices);
 
 SearchQueryDifferenceResult search_query_difference(const std::string &query1, const std::string &query2);
 

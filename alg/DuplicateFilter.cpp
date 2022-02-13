@@ -89,6 +89,53 @@ float max_similarity(const List<DuplicateDetails>& duplicates) {
     return max_similarity;
 }
 
+bool contains_negative_value(const std::vector<int>& v) {
+    for (const auto &item : v) {
+        if (item < 0) return true;
+    }
+    return false;
+}
+
+int max(const std::vector<int>& v) {
+    if (v.empty()) throw std::logic_error("Should not pass empty list");
+    int val = v[0];
+    for (const auto &item : v) val = std::max(item, val);
+    return val;
+}
+
+std::vector<int> filter_negative_values(const std::vector<int>& v) {
+    std::vector<int> result;
+    for (const auto &item : v) if (item >= 0) result.push_back(item);
+    return result;
+}
+
+std::vector<int> remap_potentially_exceeding_values(const std::vector<int>& v) {
+    const auto flipped = flip_matching_indices_expanding(v, max(v) + 1);
+    const auto filtered = filter_negative_values(flipped);
+    return flip_matching_indices(filtered);
+}
+
+std::string reorder_words(const std::string &phrase, std::vector<int> index_mapping) {
+    const auto words = get_words(phrase);
+    if (words.empty() || index_mapping.empty()) return phrase;
+
+    if (!contains_negative_value(index_mapping)) {
+        index_mapping = remap_potentially_exceeding_values(index_mapping);
+    }
+
+    unsigned next_unmapped_index = words.size() - 1;
+    std::vector<std::string> result(words.size());
+    for (unsigned i = 0; i != words.size(); ++i) {
+        int new_index = index_mapping[i];
+        if (new_index < 0 || new_index >= words.size()) {
+            result[next_unmapped_index--] = words[i];
+            continue;
+        }
+        result[new_index] = words[i];
+    }
+    return Util::StringUtil::join(result, " ");
+}
+
 void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index_dup_map) {
     Vector<unsigned> index_dup_map_keys;
     for (auto &it : index_dup_map) {
@@ -112,11 +159,11 @@ void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index
     unsigned dup_no = 1;
     for (const unsigned key : index_dup_map_keys) {
         const String& ref_line = source_lines[key].first;
-        const auto ref_line_normalized = normalize_phrase(ref_line);
+        const auto ref_line_normalized = Util::StringUtil::join(get_words(ref_line), " ");
         const List<DuplicateDetails>& duplicates = index_dup_map.at(key);
         std::vector<std::string> dup_lines_normalized;
         for (const auto &dup : duplicates) {
-            dup_lines_normalized.push_back(normalize_phrase(source_lines[dup.source_index].first, ref_line_normalized));
+            dup_lines_normalized.push_back(reorder_words(source_lines[dup.source_index].first, dup.matching_original_line_word_indices));
         }
         if (duplicates.size() == 1) {
             out_file << (dup_no++) << "." << std::endl;
@@ -128,10 +175,6 @@ void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index
             max_normalized_phrase_len = std::max<unsigned>(max_normalized_phrase_len, item.length());
         }
         out_file << "[unique] " << Util::StringUtil::pad_right(ref_line_normalized, ' ', max_normalized_phrase_len) << " ---|||--- " << ref_line << std::endl;
-        // TODO Instead of outputting alphabetically sorted "normalized" phrases,
-        //  output the original phrase preserving word ordering with special symbols filtered out,
-        //  and output all the duplicate phrases by reordering their words according to the matching map with the original phrase.
-        //  Basically make Hungarian matching return some metadata about the result and use that to derive the "normalized" phrases.
         unsigned ii = 0;
         for (const DuplicateDetails& dup : duplicates) {
             out_file << "[" << std::fixed << (dup.similarity * 100.f) << "%] "

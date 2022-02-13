@@ -25,12 +25,6 @@ std::vector<std::string> get_words(const std::string &phrase) {
     return words;
 }
 
-std::string normalize_phrase(const std::string &phrase, const std::string &source_phrase_normalized) {
-    auto words = get_words(phrase);
-    std::sort(words.begin(), words.end());
-    return Util::StringUtil::join(words, " ");
-}
-
 std::vector<int> fix_indices_matching_smallest_by_largest(const std::vector<unsigned>& matching_smallest_by_largest_displaced, unsigned words_added_to_smallest_count) {
     std::vector<int> result(matching_smallest_by_largest_displaced.size());
     for (unsigned largest_index = 0; largest_index != matching_smallest_by_largest_displaced.size(); ++largest_index) {
@@ -44,12 +38,28 @@ std::vector<int> fix_indices_matching_smallest_by_largest(const std::vector<unsi
     return result;
 }
 
-std::vector<int> flip_matching_indices(const std::vector<int> &matching_indices, const unsigned new_size) {
+std::vector<int> flip_matching_indices_shrinking(const std::vector<int> &matching_indices, const unsigned new_size) {
     std::vector<int> result(new_size);
     for (unsigned i = 0; i != matching_indices.size(); ++i) {
         if (matching_indices[i] >= 0) {
             result[matching_indices[i]] = i;
         }
+    }
+    return result;
+}
+
+std::vector<int> flip_matching_indices_expanding(const std::vector<int> &matching_indices, const unsigned new_size) {
+    std::vector<int> result(new_size, -1);
+    for (unsigned i = 0; i != matching_indices.size(); ++i) {
+        result[matching_indices[i]] = i;
+    }
+    return result;
+}
+
+std::vector<int> flip_matching_indices(const std::vector<int> &matching_indices) {
+    std::vector<int> result(matching_indices.size());
+    for (unsigned i = 0; i != matching_indices.size(); ++i) {
+        result[matching_indices[i]] = i;
     }
     return result;
 }
@@ -91,7 +101,8 @@ SearchQueryDifferenceResult search_query_difference(const std::string &query1, c
     // Everything is already correct, if query1 has more words (largest = query1, smallest = query2, 
     // so matching_smallest_by_largest is matching_query2_by_query1, which is what we want).
     // Otherwise, if largest = query2, we must flip the index list, to get matching_query2_by_query1.
-    const auto& matching_query2_by_query1 = words_count_1_bigger ? matching_smallest_by_largest : flip_matching_indices(matching_smallest_by_largest, matrix_dim - inserted_empty_word_count);
+    const auto& matching_query2_by_query1 = words_count_1_bigger ? matching_smallest_by_largest : flip_matching_indices_shrinking(
+            matching_smallest_by_largest, matrix_dim - inserted_empty_word_count);
     return SearchQueryDifferenceResult(matching_result.difference, matching_query2_by_query1);
 }
 
