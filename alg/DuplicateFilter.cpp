@@ -55,6 +55,9 @@ bool DuplicateFilter::scan_next() {
         float similarity = similarity_result.similarity;
         for (auto& diff_dup_pair : ascii_duplicates) {
             if (similarity >= 1.f - diff_dup_pair.first) {
+                if (difference_in_number(similarity_result, line.line, ref_line.line)) {
+                    break;
+                }
                 diff_dup_pair.second // the index-duplicate-map
                         .insert(IndexDupMapEl(ref_line_index, {})) // attempt to insert
                         .first // either new inserted pair or existing if already existed
@@ -270,4 +273,35 @@ unsigned DuplicateFilter::move_remaining_sources() {
         }
     }
     return count;
+}
+
+bool DuplicateFilter::difference_in_number(const SearchQuerySimilarityResult &similarity_result,
+                                           const std::string &line,
+                                           const std::string &ref_line) {
+    const auto ref_line_normalized = Util::StringUtil::join(get_words(ref_line), " ");
+    const auto line_matched = reorder_words(line, similarity_result.matching_query2_word_index_by_query1_word_index);
+    if (ref_line_normalized.size() != line_matched.size()) return false;
+    int diff_count = 0;
+    for (unsigned i = 0; i != line_matched.size(); ++i) {
+        if (ref_line_normalized[i] != line_matched[i]) {
+            if (++diff_count > 1) return false;
+            if (!is_digit(ref_line_normalized[i]) || !is_digit(line_matched[i])) {
+                return false;
+            }
+        }
+    }
+    return diff_count == 1;
+}
+
+bool DuplicateFilter::is_digit(const char &c) {
+    return c == '0'
+        || c == '1'
+        || c == '2'
+        || c == '3'
+        || c == '4'
+        || c == '5'
+        || c == '6'
+        || c == '7'
+        || c == '8'
+        || c == '9';
 }

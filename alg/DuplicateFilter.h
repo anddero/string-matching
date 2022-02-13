@@ -9,6 +9,7 @@
 #include <vector>
 #include <map>
 #include <list>
+#include "SearchQueryDifference.h"
 
 using String = std::string;
 
@@ -65,6 +66,8 @@ class DuplicateFilter {
     void write_unicode_file(const String& file_name) const;
     void write_unique_file(const String& file_name) const;
     unsigned move_remaining_sources();
+
+    static bool difference_in_number(const SearchQuerySimilarityResult &similarity_result, const std::string &line, const std::string &ref_line);
 
 public:
     /**
@@ -123,6 +126,8 @@ public:
      * cause all the generated file names to take the form 'out_<original-file-name>_<description>'.
      */
     void finalize(const String &file_name_prefix);
+
+    static bool is_digit(const char &c);
 };
 
 
