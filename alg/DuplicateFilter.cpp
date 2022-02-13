@@ -116,7 +116,7 @@ void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index
         } else {
             out_file << dup_no << ". - " << (dup_no += dups.size()) - 1 << "." << std::endl;
         }
-        out_file << ref_word << std::endl;
+        out_file << "[unique] " << ref_word << std::endl;
         for (const Duplicate& dup : dups) {
             out_file << "[" << std::fixed << (dup.second * 100.f) << "%] "
                      << source_lines[dup.first].first << std::endl;
