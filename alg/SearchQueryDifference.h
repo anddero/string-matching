@@ -11,18 +11,28 @@
 
 struct SearchQuerySimilarityResult {
     float similarity;
-    std::vector<unsigned> matching_source_word_indices;
+    std::vector<int> matching_query2_word_index_by_query1_word_index;
 
-    SearchQuerySimilarityResult(float similarity, const std::vector<unsigned int> &matchingSourceWordIndices)
+    SearchQuerySimilarityResult(float similarity, const std::vector<int> &matching_query2_word_index_by_query1_word_index)
             : similarity(similarity)
-            , matching_source_word_indices(matchingSourceWordIndices) {}
+            , matching_query2_word_index_by_query1_word_index(matching_query2_word_index_by_query1_word_index) {}
 };
 
-std::string normalize_phrase(const std::string &phrase);
+struct SearchQueryDifferenceResult {
+    unsigned difference;
+    std::vector<int> matching_query2_word_index_by_query1_word_index;
 
-HungarianMatching::Result search_query_difference(const std::string &, const std::string &);
+    SearchQueryDifferenceResult(unsigned int difference,
+                                const std::vector<int> &matchingQuery2WordIndexByQuery1WordIndex)
+        : difference(difference)
+        , matching_query2_word_index_by_query1_word_index(matchingQuery2WordIndexByQuery1WordIndex) {}
+};
 
-SearchQuerySimilarityResult search_query_similarity(const std::string &, const std::string &);
+std::string normalize_phrase(const std::string &phrase, const std::string &source_phrase_normalized = "");
+
+SearchQueryDifferenceResult search_query_difference(const std::string &query1, const std::string &query2);
+
+SearchQuerySimilarityResult search_query_similarity(const std::string &query1, const std::string &query2);
 
 
 #endif //FINDSONGDUPLICATES_SEARCHQUERYDIFFERENCE_H

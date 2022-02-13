@@ -29,12 +29,12 @@ using SourceLine = Pair<String, bool>;
 struct DuplicateDetails {
     unsigned source_index;
     float similarity;
-    std::vector<unsigned> matching_original_word_indices;
+    std::vector<int> matching_original_line_word_indices;
     DuplicateDetails(unsigned int index, float similarity,
-                     const std::vector<unsigned int> &matchingOriginalWordIndices)
+                     const std::vector<int> &matchingOriginalLineWordIndices)
             : source_index(index)
             , similarity(similarity)
-            , matching_original_word_indices(matchingOriginalWordIndices) {}
+            , matching_original_line_word_indices(matchingOriginalLineWordIndices) {}
 };
 
 using IndexDupMap = Map<unsigned, List<DuplicateDetails> >;
@@ -48,7 +48,7 @@ using DiffDupMapEl = Pair<float, IndexDupMap>;
 
 class DuplicateFilter {
     Vector<SourceLine> source_lines;
-    unsigned next_index = 0;
+    unsigned ref_line_index = 0;
 
     List<unsigned> skipped_unicode_lines;
     List<unsigned> unique_ascii_lines;

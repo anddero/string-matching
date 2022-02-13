@@ -42,6 +42,21 @@ public:
 
     struct Result {
         unsigned difference;
+        /**
+         * All matrices (including the constructor input matrix) are treated such that the rows are appended to
+         * each-other. For example, the input vector [0, 1, 2, 3, 4, 5, 6, 7, 8] is treated as the following matrix:
+         * 0 1 1
+         * 3 8 5
+         * 2 7 4
+         * If the 'matching_cols_by_row' property has the content [1, 2, 0], then by the above example matrix, the
+         * matches would be (shown as asterisks):
+         * - * -
+         * - - *
+         * * - -
+         * Thus, as the property name says, you get the column index if you ask for an element by the row index:
+         * matching_cols_by_row[1] = 2 // row = 1, col = 2
+         * And the 'difference' value would accordingly have to be 1+5+2 = 8
+         */
         std::vector<unsigned> matching_cols_by_row;
 
         Result(unsigned int score, const std::vector<unsigned int> &matchingColsByRow)

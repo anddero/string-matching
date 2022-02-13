@@ -19,55 +19,56 @@ DuplicateFilter::DuplicateFilter(const std::vector<String> &source, const Vector
 }
 
 bool DuplicateFilter::scan_next() {
-    if (next_index >= source_lines.size()) {
+    if (ref_line_index >= source_lines.size()) {
         return false;
     }
 
-    SourceLine& ref_word = source_lines[next_index];
+    SourceLine& ref_line = source_lines[ref_line_index];
 
-    if (ref_word.second) {
-        ++next_index;
+    if (ref_line.second) {
+        ++ref_line_index;
         return true;
     }
 
-    if (!Util::StringUtil::is_ascii(ref_word.first)) {
-        skipped_unicode_lines.push_back(next_index);
-        ref_word.second = true;
-        ++next_index;
+    if (!Util::StringUtil::is_ascii(ref_line.first)) {
+        skipped_unicode_lines.push_back(ref_line_index);
+        ref_line.second = true;
+        ++ref_line_index;
         return true;
     }
 
-    for (unsigned i = next_index + 1; i != source_lines.size(); ++i) {
-        SourceLine& word = source_lines[i];
+    for (unsigned line_index = ref_line_index + 1; line_index != source_lines.size(); ++line_index) {
+        SourceLine& line = source_lines[line_index];
 
-        if (word.second) {
+        if (line.second) {
             continue;
         }
 
-        if (!Util::StringUtil::is_ascii(word.first)) {
-            skipped_unicode_lines.push_back(i);
-            word.second = true;
+        if (!Util::StringUtil::is_ascii(line.first)) {
+            skipped_unicode_lines.push_back(line_index);
+            line.second = true;
             continue;
         }
 
-        const SearchQuerySimilarityResult similarity_result = search_query_similarity(word.first, ref_word.first);
+        const SearchQuerySimilarityResult similarity_result = search_query_similarity(line.first, ref_line.first);
+        const auto& matching_ref_word_index_by_word_index = similarity_result.matching_query2_word_index_by_query1_word_index;
         float similarity = similarity_result.similarity;
         for (auto& diff_dup_pair : ascii_duplicates) {
             if (similarity >= 1.f - diff_dup_pair.first) {
                 diff_dup_pair.second // the index-duplicate-map
-                        .insert(IndexDupMapEl(next_index, {})) // attempt to insert
+                        .insert(IndexDupMapEl(ref_line_index, {})) // attempt to insert
                         .first // either new inserted pair or existing if already existed
                         ->second // the list
-                        .emplace_back(i, similarity, similarity_result.matching_source_word_indices);
-                word.second = true;
+                        .emplace_back(line_index, similarity, matching_ref_word_index_by_word_index);
+                line.second = true;
                 break;
             }
         }
     }
 
-    unique_ascii_lines.push_back(next_index);
-    ref_word.second = true;
-    ++next_index;
+    unique_ascii_lines.push_back(ref_line_index);
+    ref_line.second = true;
+    ++ref_line_index;
     return true;
 }
 
@@ -111,22 +112,22 @@ void DuplicateFilter::write_dup_file(const String &file_name, IndexDupMap &index
     unsigned dup_no = 1;
     for (const unsigned key : index_dup_map_keys) {
         const String& ref_word = source_lines[key].first;
+        const auto ref_word_normalized = normalize_phrase(ref_word);
         const List<DuplicateDetails>& dups = index_dup_map.at(key);
         std::vector<std::string> dups_normalized;
         for (const auto &dup : dups) {
-            dups_normalized.push_back(normalize_phrase(source_lines[dup.source_index].first));
+            dups_normalized.push_back(normalize_phrase(source_lines[dup.source_index].first, ref_word_normalized));
         }
         if (dups.size() == 1) {
             out_file << (dup_no++) << "." << std::endl;
         } else {
             out_file << dup_no << ". - " << (dup_no += dups.size()) - 1 << "." << std::endl;
         }
-        const auto ref_word_normalized = normalize_phrase(ref_word);
         unsigned max_normalized_phrase_len = ref_word_normalized.length();
         for (const auto &item : dups_normalized) {
             max_normalized_phrase_len = std::max<unsigned>(max_normalized_phrase_len, item.length());
         }
-        out_file << "[unique] " << Util::StringUtil::pad_right(ref_word, ' ', max_normalized_phrase_len) << " ---|||--- " << ref_word << std::endl;
+        out_file << "[unique] " << Util::StringUtil::pad_right(ref_word_normalized, ' ', max_normalized_phrase_len) << " ---|||--- " << ref_word << std::endl;
         // TODO Instead of outputting alphabetically sorted "normalized" phrases,
         //  output the original phrase preserving word ordering with special symbols filtered out,
         //  and output all the duplicate phrases by reordering their words according to the matching map with the original phrase.
@@ -200,7 +201,7 @@ unsigned DuplicateFilter::get_dup_count() const {
 }
 
 unsigned DuplicateFilter::get_next_index() const {
-    return next_index;
+    return ref_line_index;
 }
 
 unsigned DuplicateFilter::get_deleted_count() const {
