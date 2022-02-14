@@ -2,13 +2,13 @@
 // Created by karlandero on 20.01.21.
 //
 
-#ifndef FINDSONGDUPLICATES_TESTSUITE_H
-#define FINDSONGDUPLICATES_TESTSUITE_H
+#ifndef STRINGMATCHING_TESTSUITE_H
+#define STRINGMATCHING_TESTSUITE_H
 
 #include <vector>
 #include <string>
 
-#define FINDSONGDUPLICATES_TESTSUITE_H_NO_DESCRIPTION "<no description>"
+#define STRINGMATCHING_TESTSUITE_H_NO_DESCRIPTION "<no description>"
 
 namespace Util {
 
@@ -25,16 +25,16 @@ namespace Util {
 
         int get_pass_count() const;
 
-        void check(bool pass, const std::string &description = FINDSONGDUPLICATES_TESTSUITE_H_NO_DESCRIPTION);
+        void check(bool pass, const std::string &description = STRINGMATCHING_TESTSUITE_H_NO_DESCRIPTION);
 
         template<typename T>
-        void check(T actual, T expected, const std::string &description = FINDSONGDUPLICATES_TESTSUITE_H_NO_DESCRIPTION);
+        void check(T actual, T expected, const std::string &description = STRINGMATCHING_TESTSUITE_H_NO_DESCRIPTION);
 
         template<typename T>
-        void check(T actual, T expected, T expected_diff, const std::string &description = FINDSONGDUPLICATES_TESTSUITE_H_NO_DESCRIPTION);
+        void check(T actual, T expected, T expected_diff, const std::string &description = STRINGMATCHING_TESTSUITE_H_NO_DESCRIPTION);
 
         template<typename T>
-        void check(const std::vector<T> &actual, const std::vector<T> &expected, const std::string &description = FINDSONGDUPLICATES_TESTSUITE_H_NO_DESCRIPTION);
+        void check(const std::vector<T> &actual, const std::vector<T> &expected, const std::string &description = STRINGMATCHING_TESTSUITE_H_NO_DESCRIPTION);
 
         ~TestSuite();
     };
@@ -43,4 +43,4 @@ namespace Util {
 
 #include "TestSuite.tpp"
 
-#endif //FINDSONGDUPLICATES_TESTSUITE_H
+#endif //STRINGMATCHING_TESTSUITE_H

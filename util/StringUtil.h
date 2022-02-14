@@ -2,8 +2,8 @@
 // Created by karlandero on 20.01.21.
 //
 
-#ifndef FINDSONGDUPLICATES_STRINGUTIL_H
-#define FINDSONGDUPLICATES_STRINGUTIL_H
+#ifndef STRINGMATCHING_STRINGUTIL_H
+#define STRINGMATCHING_STRINGUTIL_H
 
 #include <string>
 #include <vector>
@@ -26,4 +26,4 @@ namespace Util {
 }
 
 
-#endif //FINDSONGDUPLICATES_STRINGUTIL_H
+#endif //STRINGMATCHING_STRINGUTIL_H

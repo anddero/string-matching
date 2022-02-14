@@ -2,8 +2,8 @@
 // Created by karlandero on 24.01.21.
 //
 
-#ifndef FINDSONGDUPLICATES_HUNGARIANMATCHING_H
-#define FINDSONGDUPLICATES_HUNGARIANMATCHING_H
+#ifndef STRINGMATCHING_HUNGARIANMATCHING_H
+#define STRINGMATCHING_HUNGARIANMATCHING_H
 
 /**
  * Implementation of the Munkres' Assignment Algorithm based on the article
@@ -72,4 +72,4 @@ public:
 };
 
 
-#endif //FINDSONGDUPLICATES_HUNGARIANMATCHING_H
+#endif //STRINGMATCHING_HUNGARIANMATCHING_H

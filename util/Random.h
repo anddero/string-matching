@@ -2,8 +2,8 @@
 // Created by karlandero on 20.01.21.
 //
 
-#ifndef FINDSONGDUPLICATES_RANDOM_H
-#define FINDSONGDUPLICATES_RANDOM_H
+#ifndef STRINGMATCHING_RANDOM_H
+#define STRINGMATCHING_RANDOM_H
 
 #include <random>
 
@@ -30,4 +30,4 @@ namespace Util {
 
 #include "Random.tpp"
 
-#endif //FINDSONGDUPLICATES_RANDOM_H
+#endif //STRINGMATCHING_RANDOM_H

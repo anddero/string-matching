@@ -2,8 +2,8 @@
 // Created by karlandero on 18.01.21.
 //
 
-#ifndef FINDSONGDUPLICATES_DAMERAULEVENSHTEIN_H
-#define FINDSONGDUPLICATES_DAMERAULEVENSHTEIN_H
+#ifndef STRINGMATCHING_DAMERAULEVENSHTEIN_H
+#define STRINGMATCHING_DAMERAULEVENSHTEIN_H
 
 #include <string>
 
@@ -15,4 +15,4 @@ unsigned damerau_levenshtein_simplified(const std::string &, const std::string &
 // arbitrary number of characters may be either inserted or deleted in the middle of a swap operation of two consecutive
 // characters. However, certain restrictions would apply to customizing the costs of the operations.
 
-#endif //FINDSONGDUPLICATES_DAMERAULEVENSHTEIN_H
+#endif //STRINGMATCHING_DAMERAULEVENSHTEIN_H

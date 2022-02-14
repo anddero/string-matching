@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
-project(FindSongDuplicates)
+project(StringMatching)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(FindSongDuplicates main.cpp
+add_executable(StringMatching main.cpp
         alg/Levenshtein.cpp alg/Levenshtein.h
         alg/DamerauLevenshtein.cpp alg/DamerauLevenshtein.h
         util/FileUtil.cpp util/FileUtil.h

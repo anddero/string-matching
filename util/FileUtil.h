@@ -2,8 +2,8 @@
 // Created by andde on 2/8/2022.
 //
 
-#ifndef FINDSONGDUPLICATES_FILEUTIL_H
-#define FINDSONGDUPLICATES_FILEUTIL_H
+#ifndef STRINGMATCHING_FILEUTIL_H
+#define STRINGMATCHING_FILEUTIL_H
 
 #include <string>
 #include <vector>
@@ -18,4 +18,4 @@ namespace Util {
 
 }
 
-#endif //FINDSONGDUPLICATES_FILEUTIL_H
+#endif //STRINGMATCHING_FILEUTIL_H
